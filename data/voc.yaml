@@ -1,0 +1,20 @@
+# PASCAL VOC dataset http://host.robots.ox.ac.uk/pascal/VOC/
+# Train command: python train.py --data voc.yaml
+# Default dataset location is next to /yolov5:
+#   /parent_folder
+#     /VOC
+#     /yolov5
+
+
+# download command/URL (optional)
+download: bash data/scripts/get_voc.sh
+
+# train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
+train: G:/2021年中国高校大数据挑战赛赛题/赛题/赛题B/附件1训练样本/train.txt  # 16551 images
+val: G:/2021年中国高校大数据挑战赛赛题/赛题/赛题B/附件1训练样本/val.txt  # 4952 images
+
+# number of classes
+nc: 3
+
+# class names
+names: ['with_mask', 'mask_weared_incorrect', 'without_mask']
