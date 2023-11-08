@@ -22,7 +22,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 import test  # import test.py to get mAP after each epoch
-from models.yolo import Model, temp, getFeature
+from models.yolo import Model, temp #,getFeature
 from utils.datasets import create_dataloader
 from utils.general import (
     torch_distributed_zero_first, labels_to_class_weights, plot_labels, check_anchors, labels_to_image_weights,
@@ -412,13 +412,14 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default='yolov5s.pt', help='initial weights path')
-    #parser.add_argument('--cfg', type=str, default='models/yolov5x_road.yaml', help='model.yaml path')
+   # parser.add_argument('--cfg', type=str, default='models/yolov5x_road.yaml', help='model.yaml path')
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
     parser.add_argument('--data', type=str, default='data/road.yaml', help='data.yaml path')
     parser.add_argument('--data_target', type=str, default='data/target.yaml', help='data.yaml path')
+
     parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
     parser.add_argument('--epochs', type=int, default=100)
-    parser.add_argument('--batch-size', type=int, default=64, help='total batch size for all GPUs')
+    parser.add_argument('--batch-size', type=int, default=4 ,help='total batch size for all GPUs')
     parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='[train, test] image sizes')
     parser.add_argument('--rect', action='store_true', help='rectangular training')
     parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
