@@ -15,20 +15,20 @@ def guassian_kernel(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None
     '''
     # 堆叠两组样本，上面是X分布样本，下面是Y分布样本，得到（b1+b2,n）组总样本
     n_samples = int(source.shape[0]) + int(target.shape[0])
+    print(source.shape)  # 打印source的形状
+    print(target.shape)  # 打印target的形状
+    source = source.detach().cpu().numpy() if source.requires_grad else source.cpu().numpy()
+    target = target.detach().cpu().numpy() if target.requires_grad else target.cpu().numpy()
     total = np.concatenate((source, target), axis=0)
+    print("total.shape")
+    print(total.shape)
+
     # 对总样本变换格式为（1,b1+b2,n）,然后将后两维度数据复制到新拓展的维度上（b1+b2，b1+b2,n），相当于按行复制
-
     total0 = np.expand_dims(total, axis=0)
-
-
-    #total0 = np.broadcast_to(total0, [int(total.shape[0]), int(total.shape[0]), int(total.shape[1])])
-    total0 = np.repeat(total0, total.shape[0], axis=0)
+    total0 = np.broadcast_to(total0, [int(total.shape[0]), int(total.shape[0]), int(total.shape[1])])
     # 对总样本变换格式为（b1+b2,1,n）,然后将后两维度数据复制到新拓展的维度上（b1+b2，b1+b2,n），相当于按复制
-
     total1 = np.expand_dims(total, axis=1)
-    total1 = np.repeat(total1, total.shape[0], axis=1)
-
-    #total1 = np.broadcast_to(total1, [int(total.shape[0]), int(total.shape[0]), int(total.shape[1])])
+    total1 = np.broadcast_to(total1, [int(total.shape[0]), int(total.shape[0]), int(total.shape[1])])
     # total1 - total2 得到的矩阵中坐标（i,j, :）代表total中第i行数据和第j行数据之间的差
     # sum函数，对第三维进行求和，即平方后再求和，获得高斯核指数部分的分子，是L2范数的平方
     L2_distance_square = np.cumsum(np.square(total0 - total1), axis=2)
@@ -48,6 +48,7 @@ def guassian_kernel(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None
     return sum(kernel_val)  # 多核合并
 
 
+
 def MK_MMD(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None):
     '''
     计算源域数据和目标域数据的MMD距离
@@ -61,7 +62,11 @@ def MK_MMD(source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None):
      loss: MK-MMD loss
     '''
     batch_size = int(source.shape[0])  # 一般默认为源域和目标域的batchsize相同
-    kernels = guassian_kernel(source, target, kernel_mul=kernel_mul, kernel_num=kernel_num, fix_sigma=fix_sigma)
+
+    source_2d = source.reshape(source.size(0), -1)
+    target_2d = target.reshape(target.size(0), -1)
+
+    kernels = guassian_kernel(source_2d, target_2d, kernel_mul=kernel_mul, kernel_num=kernel_num, fix_sigma=fix_sigma)
     # 将核矩阵分成4部分
     loss = 0
     for i in range(batch_size):
