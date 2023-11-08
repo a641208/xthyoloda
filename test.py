@@ -104,6 +104,10 @@ def test(data,
             inf_out, train_out = model(img, augment=augment)  # inference and training outputs
             t0 += time_synchronized() - t
 
+            # 使用 .reshape() 方法来重塑张量
+            #train_out = train_out.reshape(train_out.size(0), -1)
+            #targets = targets.reshape(targets.size(0), -1)
+
             # Compute loss
             if training:  # if model has loss hyperparameters
                 loss += compute_loss([x.float() for x in train_out], targets, model)[1][:3]  # GIoU, obj, cls
