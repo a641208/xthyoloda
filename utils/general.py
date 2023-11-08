@@ -200,7 +200,7 @@ def labels_to_class_weights(labels, nc=80):
         return torch.Tensor()
 
     labels = np.concatenate(labels, 0)  # labels.shape = (866643, 5) for COCO
-    classes = labels[:, 0].astype(np.int_)  # labels = [class xywh]
+    classes = labels[:, 0].astype(np.int)  # labels = [class xywh]
     weights = np.bincount(classes, minlength=nc)  # occurences per class
 
     # Prepend gridpoint count (for uCE trianing)
@@ -544,8 +544,8 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     device = targets.device
     lcls, lbox, lobj = torch.zeros(1, device=device), torch.zeros(1, device=device), torch.zeros(1, device=device)
     tcls, tbox, indices, anchors = build_targets(p, targets, model)  # targets
-   # print("tcls: ")
-   # print(tcls)
+    print("tcls: ")
+    print(tcls)
     # print("tbox:")
     # print(tbox)
     # print("indices:")
@@ -577,13 +577,14 @@ def compute_loss(p, targets, model):  # predictions, targets, model
         tobj = torch.zeros_like(pi[..., 0], device=device)  # target obj
 
         n = b.shape[0]  # number of targets
-       # print("b:::::")
-      #  print(b.shape[0])
+        print("b:::::")
+        print(b.shape[0])
         if n:
             nt += n  # cumulative targets
             ps = pi[b, a, gj, gi]  # prediction subset corresponding to targets
-       #     print(ps.shape)
-          #  print(ps[:, 2:4])
+            print("ps.shape")
+            print(ps.shape)
+           # print(ps[:, 2:4])
             # Regression
             pxy = ps[:, :2].sigmoid() * 2. - 0.5
             pwh = (ps[:, 2:4].sigmoid() * 2) ** 2 * anchors[i]#anchor[i]中有三个比例的框
@@ -593,8 +594,8 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             #/#/finis
             # Objectness
             tobj[b, a, gj, gi] = (1.0 - model.gr) + model.gr * giou.detach().clamp(0).type(tobj.dtype)  # giou ratio直接拿giou当置信度
-         #   print("tobj:")
-          #  print(tobj.shape)
+            print("tobj:")
+            print(tobj.shape)
             # Classification
             if model.nc > 1:  # cls loss (only if multiple classes)
                 t = torch.full_like(ps[:, 5:], cn, device=device)  # targets
@@ -606,9 +607,9 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             # Append targets to text file
             # with open('targets.txt', 'a') as file:
             #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
-     #   print("#############")
-      #  print(pi[...,4])
-       # print(pi[...,4].shape)
+        print("#############")
+        print(pi[...,4])
+        print(pi[...,4].shape)
         lobj += BCEobj(pi[..., 4], tobj) * balance[i]  # obj loss
 
     s = 3 / np  # output count scaling
@@ -1050,15 +1051,15 @@ def feature_visualization(features, model_type, model_id, feature_num=64):
 
     plt.figure()
     for i in range(feature_num):
-        torch.squeeze(blocks[i])
-        feature = transforms.ToPILImage()(blocks[i].squeeze())
-        # print(feature)
+        mean_channel = blocks[i].squeeze().mean(dim=0, keepdim=True)
+        # 对单通道特征图进行归一化，使其值范围在[0, 1]之间
+        mean_channel = (mean_channel - mean_channel.min()) / (mean_channel.max() - mean_channel.min())
+        # 将单通道特征图转换为PIL图像
+        feature = transforms.ToPILImage()(mean_channel)
         ax = plt.subplot(int(math.sqrt(feature_num)), int(math.sqrt(feature_num)), i + 1)
         ax.set_xticks([])
         ax.set_yticks([])
-        plt.imshow(feature)
-        # gray feature
-        # plt.imshow(feature, cmap='gray')
+        plt.imshow(feature, cmap='gray')
 
     # plt.show()
     plt.savefig(save_dir + '{}_{}_feature_map_{}.png'
